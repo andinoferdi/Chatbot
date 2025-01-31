@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const chatBox = document.getElementById("chat-box");
   const userInput = document.getElementById("user-input");
   const sessionList = document.getElementById("session-list");
-  const newChatButton = document.getElementById("new-chat-btn"); // Ensure the button exists in HTML
+  const newChatButton = document.getElementById("new-chat-btn");
 
   let currentSession = null;
   let sessionNames = {};
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function loadSession(sessionId) {
     currentSession = sessionId;
-    fetch(`/get_history/${sessionId}`) // FIXED STRING INTERPOLATION
+    fetch(`/get_history/${sessionId}`)
       .then((response) => response.json())
       .then((data) => {
         chatBox.innerHTML = "";

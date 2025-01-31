@@ -5,12 +5,10 @@ import os
 import uuid
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 
-# API Configuration
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 API_URL = os.getenv("OPENROUTER_API_URL", "https://openrouter.ai/api/v1/chat/completions")
 
@@ -21,16 +19,13 @@ headers = {
 
 SESSIONS_FILE = "data/chat_sessions.json"
 
-# Ensure data directory exists
 if not os.path.exists("data"):
     os.makedirs("data")
 
-# Initialize chat sessions file if not exists
 if not os.path.exists(SESSIONS_FILE):
     with open(SESSIONS_FILE, "w") as file:
         json.dump({}, file)
 
-# Load chat sessions with error handling
 def load_chat_sessions():
     try:
         with open(SESSIONS_FILE, "r") as file:
@@ -38,33 +33,28 @@ def load_chat_sessions():
     except (json.JSONDecodeError, FileNotFoundError):
         return {}
 
-# Save chat sessions
 def save_chat_sessions(sessions):
     with open(SESSIONS_FILE, "w") as file:
         json.dump(sessions, file, indent=4)
 
-# Generate a new session ID
 @app.route("/new_session", methods=["GET"])
 def new_session():
-    session_id = str(uuid.uuid4())  # Generate a unique ID
+    session_id = str(uuid.uuid4())  
     chat_sessions = load_chat_sessions()
-    chat_sessions[session_id] = []  # Create empty chat history
+    chat_sessions[session_id] = []  
     save_chat_sessions(chat_sessions)
     return jsonify({"session_id": session_id})
 
-# Get chat history for a session
 @app.route("/get_history/<session_id>", methods=["GET"])
 def get_history(session_id):
     chat_sessions = load_chat_sessions()
     return jsonify({"history": chat_sessions.get(session_id, [])})
 
-# Get all available chat sessions
 @app.route("/get_sessions", methods=["GET"])
 def get_sessions():
     chat_sessions = load_chat_sessions()
     return jsonify({"sessions": list(chat_sessions.keys())})
 
-# Handle chat messages
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
@@ -76,14 +66,11 @@ def chat():
 
     chat_sessions = load_chat_sessions()
 
-    # Ensure session exists
     if session_id not in chat_sessions:
         chat_sessions[session_id] = []
 
-    # Add user message to session memory
     chat_sessions[session_id].append({"role": "user", "content": user_message})
 
-    # Send request to OpenRouter API
     payload = {
         "model": "openai/gpt-3.5-turbo",
         "messages": chat_sessions[session_id]
@@ -105,7 +92,6 @@ def chat():
     else:
         return jsonify({"error": f"Error {response.status_code}: {response.text}"}), response.status_code
 
-# Render chat UI
 @app.route("/")
 def index():
     return render_template("index.html")
